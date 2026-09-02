@@ -14,7 +14,7 @@ export function ActivityLog({ activity }: Props) {
     <Card className="bg-[var(--paper-card)] shadow-none ring-ink/10">
       <CardHeader className="border-b border-ink/10">
         <CardTitle className="font-serif text-xl">Shared log</CardTitle>
-        <CardDescription>Every human click and every site-tool call lands here so you can see the partnership.</CardDescription>
+        <CardDescription>Your clicks and its tool calls both land here, so you can see who did what.</CardDescription>
       </CardHeader>
       <CardContent>
         {activity.length === 0 ? (

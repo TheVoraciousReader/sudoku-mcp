@@ -384,7 +384,7 @@ export function setInputMode(state: GameState, inputMode: GameState["inputMode"]
 function canAgentWrite(state: GameState, index: number, source: FillSource): string | null {
   if (state.givens[index]) return `${cellRef(index)} is a given and cannot be changed.`;
   if (source === "agent" && state.locked[index]) {
-    return `${cellRef(index)} is locked. Unlock it before the agent may write there.`;
+    return `${cellRef(index)} is locked and cannot be filled from the chat.`;
   }
   return null;
 }
@@ -484,7 +484,7 @@ export function lockCell(state: GameState, index: number, locked: boolean): { st
   });
   return {
     state: next,
-    result: result(next, true, locked ? `Locked ${cellRef(index)} from the agent.` : `Unlocked ${cellRef(index)}.`),
+    result: result(next, true, locked ? `Locked ${cellRef(index)} so it will not be filled from the chat.` : `Unlocked ${cellRef(index)}.`),
   };
 }
 
@@ -607,7 +607,7 @@ export function explainCell(state: GameState, index: number): { message: string;
   if (value !== 0) {
     const source = state.sources[index];
     const origin =
-      source === "given" ? "printed as a given" : source === "agent" ? "filled by the agent" : "filled by you";
+      source === "given" ? "printed as a given" : source === "agent" ? "filled from the chat" : "filled by you";
     return {
       message: `${cellRef(index)} is ${value}, ${origin}.${state.locked[index] ? " It is locked." : ""}`,
       candidates: [],

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { Check, ChevronDown, Copy } from "lucide-react";
 import { ActivityLog } from "@/components/activity-log";
 import { HintPanel } from "@/components/hint-panel";
 import { SudokuControls } from "@/components/sudoku-controls";
@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Toggle } from "@/components/ui/toggle";
 import { useStudio } from "@/hooks/use-studio";
-import { cn } from "@/lib/utils";
 
 const PROMPTS = [
   "Give me a hint, don't fill anything.",
@@ -19,6 +18,33 @@ const PROMPTS = [
   "Apply the next safe step.",
   "Lock r9c7 so you cannot write there, then hint again.",
 ];
+
+function SetupHelp() {
+  return (
+    <details className="group rounded-lg border border-ink/10 bg-white/40 px-3 py-2">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-sm text-ink/70 marker:content-none [&::-webkit-details-marker]:hidden [&_svg]:pointer-events-none">
+        If it’s not working
+        <ChevronDown className="size-3.5 shrink-0 text-ink/40 transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="space-y-3 border-t border-ink/10 pt-3 mt-2 text-sm leading-6 text-ink/70">
+        <p>Site tools only appear in ChatGPT’s built-in browser, and only on some models.</p>
+        <ol className="list-decimal space-y-1.5 pl-4">
+          <li>Update the ChatGPT desktop app.</li>
+          <li>Use GPT-5.6 Sol or Terra. Luna, Enterprise, and Edu don’t show site tools.</li>
+          <li>Open this page in that browser, then look for Site tools in the address bar.</li>
+          <li>
+            You can also try Chrome 149+ with{" "}
+            <code className="font-mono text-xs">chrome://flags/#enable-webmcp-testing</code>.
+          </li>
+        </ol>
+        <p>The puzzle is fully playable either way.</p>
+        <p className="text-xs leading-5 text-ink/55">
+          Tools on this page: read_board, hint, check_move, apply_next_step, set_cell, lock_cell, and undo.
+        </p>
+      </div>
+    </details>
+  );
+}
 
 function PromptButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -46,11 +72,11 @@ export function Studio() {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-6 sm:px-6 lg:py-10">
       <header className="flex flex-col gap-4 border-b border-ink/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="max-w-xl space-y-2">
-          <p className="text-xs font-medium tracking-[0.22em] text-teal-800 uppercase">WebMCP studio</p>
+          <p className="text-xs font-medium tracking-[0.22em] text-teal-800 uppercase">Sudoku</p>
           <h1 className="font-serif text-4xl tracking-tight text-ink sm:text-5xl">Givens</h1>
           <p className="max-w-md text-sm leading-6 text-ink/70 sm:text-base">
-            You and an agent share one Sudoku. It shows the technique. You decide whether to fill it. No dumped
-            solutions, no guessing clicks.
+            You and ChatGPT share one Sudoku. It names the next technique and waits. You fill, lock, or let it take one
+            safe step.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -63,14 +89,6 @@ export function Studio() {
           <Badge variant="outline">{studio.empty} empty</Badge>
         </div>
       </header>
-
-      {webmcp === "missing" ? (
-        <p className="rounded-lg border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">
-          Open this page in the ChatGPT desktop in-app browser (GPT-5.6 Sol or Terra) or Chrome 149+ with{" "}
-          <code className="font-mono text-xs">chrome://flags/#enable-webmcp-testing</code>. The grid stays fully
-          playable either way.
-        </p>
-      ) : null}
 
       <div className="flex flex-wrap gap-2">
         {studio.puzzles.map((item) => (
@@ -125,7 +143,7 @@ export function Studio() {
           />
           {studio.solved ? (
             <p className="rounded-lg bg-teal-50 px-4 py-2 text-sm text-teal-900">
-              {puzzle.name} is complete. Givens stay ink. Your digits are indigo. Agent digits are teal.
+              {puzzle.name} is complete. Givens stay ink. Yours are indigo. Fills from the chat are teal.
             </p>
           ) : null}
         </section>
@@ -135,19 +153,17 @@ export function Studio() {
           <ActivityLog activity={studio.activity} />
           <Card className="bg-[var(--paper-card)] shadow-none ring-ink/10">
             <CardHeader className="border-b border-ink/10">
-              <CardTitle className="font-serif text-xl">Try it with Codex</CardTitle>
-              <CardDescription>
-                Open Givens in ChatGPT’s built-in browser, confirm Site tools in the address bar, then send one of these.
-              </CardDescription>
+              <CardTitle className="font-serif text-xl">Try a prompt</CardTitle>
+              <CardDescription>Copy one of these into the chat. It will use the tools on this page.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               {PROMPTS.map((text) => (
                 <PromptButton key={text} text={text} />
               ))}
-              <p className={cn("pt-1 text-xs leading-5 text-ink/55")}>
-                Tools live on this top-level page: read_board, hint, check_move, apply_next_step, set_cell, lock_cell,
-                and undo.
+              <p className="pt-1 text-xs leading-5 text-ink/55">
+                It can hint, check a move, fill one safe step, lock a cell, and undo.
               </p>
+              <SetupHelp />
             </CardContent>
           </Card>
         </aside>

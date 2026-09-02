@@ -121,7 +121,7 @@ export const PUZZLES: Puzzle[] = [
     id: "evening",
     name: "Evening edition",
     difficulty: "medium",
-    blurb: "Keep pencil marks honest. The agent should explain before filling.",
+    blurb: "Keep pencil marks honest. Ask it to explain before filling.",
     givens: compact(`
       000000907
       000420180

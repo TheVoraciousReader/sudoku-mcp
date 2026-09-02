@@ -19,9 +19,9 @@ const instrument = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Givens — Sudoku with a partner who shows their work",
+  title: "Givens — Sudoku with ChatGPT",
   description:
-    "A WebMCP Sudoku studio. You and ChatGPT or Codex share one grid: hints, checks, and one-step deductions — never a dumped solution.",
+    "You and ChatGPT share one Sudoku. It names the next technique; you decide whether to fill it. Hints, checks, and one safe step — never a dumped solution.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

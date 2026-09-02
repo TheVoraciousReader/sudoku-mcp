@@ -19,17 +19,17 @@ export function HintPanel({ hint, lastCheck, solved, empty }: Props) {
         <CardTitle className="font-serif text-xl">Why this cell</CardTitle>
         <CardDescription>
           {solved
-            ? "The grid is complete. You and the agent finished without dumping the solution."
+            ? "The grid is complete, and nobody dumped the solution."
             : hint
               ? "A technique is highlighted on the board. Nothing is filled until you apply it."
               : lastCheck
                 ? lastCheck.message
-                : `${empty} empty cells. Ask for a hint, or have Codex call the hint tool.`}
+                : `${empty} empty cells. Ask for a hint, or copy a prompt below.`}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
         {solved ? (
-          <p className="text-sm text-teal-800">Solved. The last fill is still on the grid in teal if the agent wrote it.</p>
+          <p className="text-sm text-teal-800">Solved. Teal digits are the ones it wrote.</p>
         ) : hint ? (
           <>
             <div className="flex flex-wrap items-center gap-2">
@@ -50,8 +50,7 @@ export function HintPanel({ hint, lastCheck, solved, empty }: Props) {
           </div>
         ) : (
           <p className="text-sm leading-6 text-muted-foreground">
-            The agent should call <code className="font-mono text-xs">hint</code> rather than filling the puzzle. You can
-            lock any cell it must not touch.
+            Ask it for a hint rather than the full solution. You can lock any cell it shouldn’t touch.
           </p>
         )}
       </CardContent>
