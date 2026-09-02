@@ -1,46 +1,36 @@
 # Givens
 
-A Sudoku studio for people and agents. You share one live grid. The agent names the next technique, highlights the cells, and waits. You fill, lock, or tell it to take one safe step.
+A Sudoku studio for people and agents. You share one live grid. The agent names the next technique, highlights the cells, and waits. You fill, lock, or take one safe step. No dumped solutions.
 
-This is a [WebMCP](https://webmachinelearning.github.io/webmcp/) app for the [WebMCP Challenge](https://webmcp.devpost.com/). Site tools are registered on the top-level page with `document.modelContext.registerTool`. ChatGPT Work and Codex can call them from the ChatGPT desktop in-app browser.
+Built for the [WebMCP Challenge](https://webmcp.devpost.com/).
 
-## Why WebMCP
+License: MIT (this file is at the repository root so GitHub can detect it).
 
-Sudoku is a bad fit for a dumped answer and a good fit for a shared page:
-
-- The grid is the workspace. Fills and highlights happen in the same session you are looking at.
-- `hint` explains a naked single, hidden single, naked pair, or pointing pair without writing a digit.
-- `check_move` tells you if a digit is a conflict, a guess, or forced.
-- `apply_next_step` writes exactly one deduction.
-- `lock_cell` fences a cell the agent must not touch.
-
-The agent is told, in tool descriptions and in every `read_board` snapshot, not to print the full solution.
-
-## Run locally
-
-From the repo root:
+## Run
 
 ```bash
-cd proj/sudokumcp
 npm install
 npm run dev
 ```
 
-Open [http://127.0.0.1:43147](http://127.0.0.1:43147). The puzzle is fully playable in any browser.
+Open [http://127.0.0.1:43147](http://127.0.0.1:43147). The puzzle is playable without WebMCP.
 
-### Site tools (ChatGPT / Codex)
+## How WebMCP is implemented
 
-1. Update the ChatGPT desktop app.
-2. Use GPT-5.6 Sol or Terra (Luna, Enterprise, and Edu do not expose site tools).
-3. Open the live URL in ChatGPT’s built-in browser.
-4. Confirm **Site tools** in the address bar.
-5. Try: `Give me a hint, don't fill anything.`
+Tools register on the **top-level page** (ChatGPT does not discover iframe or declarative HTML tools):
 
-Or test in Chrome 149+ with `chrome://flags/#enable-webmcp-testing`.
+```js
+document.modelContext.registerTool({
+  name: "hint",
+  description: "Find the next safe Sudoku technique. Highlights cells. Does not fill.",
+  inputSchema: { type: "object", properties: {}, additionalProperties: false },
+  execute: async (input) => { /* ... */ },
+});
+```
 
-Declarative HTML tools and iframe tools are not used. ChatGPT does not discover those.
+Registration lives in [`src/lib/webmcp/register-tools.ts`](src/lib/webmcp/register-tools.ts).
 
-## Tools
+### Tools
 
 | Tool | What it does |
 | --- | --- |
@@ -56,14 +46,23 @@ Declarative HTML tools and iframe tools are not used. ChatGPT does not discover 
 | `undo` | Revert the last change |
 | `load_puzzle` | Switch bundled puzzles |
 
-## Scripts
+## Test with ChatGPT / Codex (judges)
 
-```bash
-npm run dev      # http://127.0.0.1:43147
-npm run build
-npm run verify   # unique solutions + technique solver
-```
+1. Open the **live URL** in the ChatGPT desktop in-app browser (GPT-5.6 Sol or Terra). Luna, Enterprise, and Edu do not expose site tools.
+2. Confirm **Site tools** in the address bar.
+3. Start on puzzle **Last five**, then try:
+
+- Give me a hint, don't fill anything.
+- Check whether r9c9 can be 9.
+- Apply the next safe step.
+- Lock r9c7 so you cannot write there, then hint again.
+
+Or Chrome 149+ with `chrome://flags/#enable-webmcp-testing`.
+
+## Why this is a WebMCP app
+
+The grid is the shared workspace. Fills and highlights happen in the same session you are watching. The agent cannot overwrite givens or locked cells. `read_board` tells it not to print the full solution.
 
 ## Stack
 
-Next.js, TypeScript, Tailwind, shadcn/ui. The solver and all tools run in the client. No account, no API key.
+Next.js, TypeScript, Tailwind, shadcn/ui. Solver and tools run in the client. No account, no API key.
