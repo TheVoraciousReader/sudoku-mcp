@@ -9,8 +9,8 @@ License: MIT (this file is at the repository root so GitHub can detect it).
 ## Run
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Open [http://127.0.0.1:43147](http://127.0.0.1:43147). The puzzle is playable without WebMCP.

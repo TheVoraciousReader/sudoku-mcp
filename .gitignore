@@ -43,3 +43,6 @@ next-env.d.ts
 # local fetch dumps
 /agent-tools
 
+#pnpm
+./pnpm-store/*
+
