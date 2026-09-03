@@ -1,0 +1,2 @@
+[build.environment]
+  SITE_URL = "https://givens.netlify.app"

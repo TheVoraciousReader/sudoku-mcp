@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { normalizeSiteUrl } from "@/lib/seo";
+import { DEFAULT_SITE_URL, normalizeSiteUrl } from "@/lib/seo";
 
 export function proxy(request: NextRequest) {
   if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "production") {
     return NextResponse.next();
   }
+  if (process.env.CONTEXT && process.env.CONTEXT !== "production") {
+    return NextResponse.next();
+  }
 
-  const siteUrl = normalizeSiteUrl(process.env.SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL);
+  const siteUrl = normalizeSiteUrl(
+    process.env.SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL,
+  );
   if (!siteUrl) return NextResponse.next();
 
   const canonical = new URL(siteUrl);

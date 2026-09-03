@@ -4,6 +4,7 @@ export const SITE_NAME = "Givens";
 export const SITE_TITLE = "Givens — Sudoku with ChatGPT";
 export const SITE_DESCRIPTION =
   "You and ChatGPT share one Sudoku. It names the next technique; you decide whether to fill it. Hints, checks, and one safe step — never a dumped solution.";
+export const DEFAULT_SITE_URL = "https://givens.netlify.app";
 
 export const brand = {
   paper: "#F4EEE4",
@@ -25,7 +26,9 @@ function rawSiteUrl(): string | undefined {
   return (
     process.env.SITE_URL ||
     process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.VERCEL_PROJECT_PRODUCTION_URL
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+    (process.env.NETLIFY ? process.env.URL : undefined) ||
+    DEFAULT_SITE_URL
   );
 }
 
