@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { brand, createPageMetadata, SITE_DESCRIPTION, SITE_TITLE } from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,10 +19,14 @@ const instrument = Instrument_Serif({
   variable: "--font-instrument",
 });
 
-export const metadata: Metadata = {
-  title: "Givens — Sudoku with ChatGPT",
-  description:
-    "You and ChatGPT share one Sudoku. It names the next technique; you decide whether to fill it. Hints, checks, and one safe step — never a dumped solution.",
+export const metadata: Metadata = createPageMetadata({
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  path: "/",
+});
+
+export const viewport: Viewport = {
+  themeColor: brand.paper,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
