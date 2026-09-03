@@ -1,5 +1,5 @@
 export type Digit = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-export type Difficulty = "demo" | "easy" | "medium" | "hard";
+export type Difficulty = "demo" | "easy" | "medium" | "hard" | "custom";
 export type FillSource = "given" | "you" | "agent";
 export type InputMode = "digit" | "pencil";
 
@@ -40,6 +40,7 @@ export type MoveCheck =
 
 export type GameState = {
   puzzleId: string;
+  puzzle: Puzzle;
   values: number[];
   givens: boolean[];
   locked: boolean[];

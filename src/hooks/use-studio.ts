@@ -7,6 +7,7 @@ import {
   checkMove,
   clearCell,
   computeCandidates,
+  createCustomPuzzle,
   createGame,
   emptyCount,
   explainCell,
@@ -185,6 +186,24 @@ export function useStudio() {
         pushLog("agent", "load_puzzle", `Loaded ${result.board.name}.`);
         return { ...result, message: `Loaded ${result.board.name}. ${result.board.difficulty} · ${result.board.empty} empty cells.` };
       },
+      loadCustomPuzzle: (grid) => {
+        const created = createCustomPuzzle(grid);
+        if (!created.ok) {
+          const current = readBoard(stateRef.current);
+          pushLog("agent", "load_custom_puzzle", created.message);
+          return { ...current, ok: false, message: created.message };
+        }
+        const next = createGame(created.puzzle);
+        setState(next);
+        stateRef.current = next;
+        setLastCheck(null);
+        const result = readBoard(next);
+        pushLog("agent", "load_custom_puzzle", `Loaded ${result.board.name}.`);
+        return {
+          ...result,
+          message: `Loaded ${result.board.name}. ${result.board.difficulty} · ${result.board.empty} empty cells.`,
+        };
+      },
       listPuzzles,
     }),
     [pushLog, run]
@@ -215,6 +234,7 @@ export function useStudio() {
       applyNextStep: (source) => methodsRef.current!.applyNextStep(source),
       undo: () => methodsRef.current!.undo(),
       loadPuzzle: (id) => methodsRef.current!.loadPuzzle(id),
+      loadCustomPuzzle: (grid) => methodsRef.current!.loadCustomPuzzle(grid),
       listPuzzles: () => methodsRef.current!.listPuzzles(),
     };
     registerSudokuTools(ctx, proxy, controller.signal)
@@ -264,10 +284,23 @@ export function useStudio() {
         setState(next);
         stateRef.current = next;
         setLastCheck(null);
-        pushLog("you", "load_puzzle", `Loaded ${next.puzzleId}.`);
+        pushLog("you", "load_puzzle", `Loaded ${next.puzzle.name}.`);
+      },
+      loadCustom: (raw: string) => {
+        const created = createCustomPuzzle(raw);
+        if (!created.ok) return created;
+        const next = createGame(created.puzzle);
+        setState(next);
+        stateRef.current = next;
+        setLastCheck(null);
+        pushLog("you", "load_custom_puzzle", `Loaded ${next.puzzle.name}.`);
+        return {
+          ok: true,
+          message: `Loaded ${next.puzzle.name}. ${next.puzzle.difficulty} · ${emptyCount(next)} empty cells.`,
+        };
       },
       restart: () => {
-        const next = loadPuzzle(stateRef.current.puzzleId);
+        const next = createGame(stateRef.current.puzzle);
         setState(next);
         stateRef.current = next;
         setLastCheck(null);
@@ -335,7 +368,7 @@ export function useStudio() {
     [state.values, state.eliminated]
   );
 
-  const puzzle = PUZZLES.find((item) => item.id === state.puzzleId) ?? PUZZLES[0];
+  const puzzle = state.puzzle;
   const webmcp: WebmcpStatus = hasModelContext ? (registered ? "ready" : "checking") : "missing";
 
   return {

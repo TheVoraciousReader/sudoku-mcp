@@ -37,6 +37,7 @@ type StudioMethods = {
   applyNextStep: (source: FillSource) => ToolResult;
   undo: () => ToolResult;
   loadPuzzle: (id: string) => ToolResult;
+  loadCustomPuzzle: (grid: string) => ToolResult;
   listPuzzles: () => { id: string; name: string; difficulty: string; blurb: string }[];
 };
 
@@ -301,6 +302,31 @@ export async function registerSudokuTools(
         const id = String(input.id ?? "");
         if (!id) return { ok: false, message: "Provide a puzzle id." };
         return methods.loadPuzzle(id);
+      },
+    },
+    options
+  );
+
+  await ctx.registerTool(
+    {
+      name: "load_custom_puzzle",
+      description:
+        "Load a Sudoku the human pasted. grid is 81 cells (digits, 0 or . for blanks). Spaces and line breaks are allowed. Rejects invalid, unsolvable, or non-unique grids. Resets the board.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          grid: {
+            type: "string",
+            description: "81 Sudoku cells as digits. Use 0 or . for empty cells.",
+          },
+        },
+        required: ["grid"],
+        additionalProperties: false,
+      },
+      execute: async (input) => {
+        const grid = String(input.grid ?? "");
+        if (!grid.trim()) return { ok: false, message: "Provide a grid of 81 cells." };
+        return methods.loadCustomPuzzle(grid);
       },
     },
     options

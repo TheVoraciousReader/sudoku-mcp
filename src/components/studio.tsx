@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, ChevronDown, Copy } from "lucide-react";
 import { ActivityLog } from "@/components/activity-log";
+import { CustomPuzzleForm } from "@/components/custom-puzzle-form";
 import { HintPanel } from "@/components/hint-panel";
 import { SudokuControls } from "@/components/sudoku-controls";
 import { SudokuGrid } from "@/components/sudoku-grid";
@@ -39,7 +40,7 @@ function SetupHelp() {
         </ol>
         <p>The puzzle is fully playable either way.</p>
         <p className="text-xs leading-5 text-ink/55">
-          Tools on this page: read_board, hint, check_move, apply_next_step, set_cell, lock_cell, and undo.
+          Tools on this page: read_board, hint, check_move, apply_next_step, set_cell, lock_cell, undo, and load_custom_puzzle.
         </p>
       </div>
     </details>
@@ -67,6 +68,8 @@ function PromptButton({ text }: { text: string }) {
 export function Studio() {
   const studio = useStudio();
   const { state, puzzle, you, webmcp } = studio;
+  const [customOpen, setCustomOpen] = useState(false);
+  const customActive = puzzle.id === "custom";
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-6 sm:px-6 lg:py-10">
@@ -90,19 +93,41 @@ export function Studio() {
         </div>
       </header>
 
-      <div className="flex flex-wrap gap-2">
-        {studio.puzzles.map((item) => (
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap gap-2">
+          {studio.puzzles.map((item) => (
+            <Button
+              key={item.id}
+              type="button"
+              size="sm"
+              variant={item.id === puzzle.id ? "default" : "outline"}
+              className={item.id === puzzle.id ? "bg-ink" : "bg-white/60"}
+              onClick={() => {
+                setCustomOpen(false);
+                you.load(item.id);
+              }}
+            >
+              {item.name}
+            </Button>
+          ))}
           <Button
-            key={item.id}
             type="button"
             size="sm"
-            variant={item.id === puzzle.id ? "default" : "outline"}
-            className={item.id === puzzle.id ? "bg-ink" : "bg-white/60"}
-            onClick={() => you.load(item.id)}
+            variant={customActive ? "default" : "outline"}
+            className={customActive ? "bg-ink" : "bg-white/60"}
+            aria-expanded={customOpen}
+            aria-controls="custom-puzzle-form"
+            onClick={() => setCustomOpen((open) => !open)}
           >
-            {item.name}
+            Your own
           </Button>
-        ))}
+        </div>
+        {customOpen ? (
+          <CustomPuzzleForm
+            onPlay={you.loadCustom}
+            onPlayed={() => setCustomOpen(false)}
+          />
+        ) : null}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_22rem]">
@@ -143,7 +168,7 @@ export function Studio() {
           />
           {studio.solved ? (
             <p className="rounded-lg bg-teal-50 px-4 py-2 text-sm text-teal-900">
-              {puzzle.name} is complete. Givens stay ink. Yours are indigo. Fills from the chat are teal.
+              Puzzle complete! Givens are in ink, your entries in indigo, and chat-filled cells in teal.
             </p>
           ) : null}
         </section>

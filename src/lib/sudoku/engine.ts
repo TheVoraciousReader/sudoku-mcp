@@ -138,6 +138,7 @@ function snapshotOf(state: GameState): HistorySnapshot {
 function cloneState(state: GameState): GameState {
   return {
     puzzleId: state.puzzleId,
+    puzzle: state.puzzle,
     values: state.values.slice(),
     givens: state.givens.slice(),
     locked: state.locked.slice(),
@@ -159,11 +160,57 @@ function commit(state: GameState, mutate: (next: GameState) => void): GameState 
   return next;
 }
 
+export const CUSTOM_PUZZLE_ID = "custom";
+
+export type CustomPuzzleResult =
+  | { ok: true; puzzle: Puzzle }
+  | { ok: false; message: string };
+
+export function createCustomPuzzle(raw: string): CustomPuzzleResult {
+  const chars = raw.replace(/[^0-9.]/g, "");
+  if (chars.length !== 81) {
+    return {
+      ok: false,
+      message: `Need 81 cells (digits or dots). This has ${chars.length}.`,
+    };
+  }
+  const values = parseGrid(chars);
+  const conflicts = conflictIndices(values);
+  if (conflicts.length > 0) {
+    return {
+      ok: false,
+      message: `These givens clash (${conflicts.map(cellRef).join(", ")}).`,
+    };
+  }
+  const solved = solveUnique(chars);
+  if (solved.solutions.length === 0) {
+    return { ok: false, message: "This grid has no solution." };
+  }
+  if (!solved.unique) {
+    return {
+      ok: false,
+      message: "This grid has more than one solution. Add more givens so it is unique.",
+    };
+  }
+  return {
+    ok: true,
+    puzzle: {
+      id: CUSTOM_PUZZLE_ID,
+      name: "Your own",
+      difficulty: "custom",
+      givens: formatGrid(values),
+      solution: solved.solutions[0],
+      blurb: "A puzzle you pasted. Same tools, same rules.",
+    },
+  };
+}
+
 export function createGame(puzzle: Puzzle = getPuzzle("last-five")): GameState {
   const values = parseGrid(puzzle.givens);
   const givens = values.map((value) => value !== 0);
   return {
     puzzleId: puzzle.id,
+    puzzle,
     values,
     givens,
     locked: Array(81).fill(false),
@@ -178,7 +225,7 @@ export function createGame(puzzle: Puzzle = getPuzzle("last-five")): GameState {
 }
 
 export function puzzleOf(state: GameState): Puzzle {
-  return getPuzzle(state.puzzleId);
+  return state.puzzle;
 }
 
 export function isSolved(state: GameState): boolean {
@@ -481,6 +528,13 @@ export function lockCell(state: GameState, index: number, locked: boolean): { st
   const next = commit(state, (draft) => {
     draft.locked[index] = locked;
     draft.selected = index;
+    // Clear stale hint if it targets a cell whose lock status just changed
+    if (draft.hint) {
+      const hintTarget = draft.hint.fill?.index ?? draft.hint.cells[0];
+      if (hintTarget === index) {
+        draft.hint = null;
+      }
+    }
   });
   return {
     state: next,
@@ -507,7 +561,7 @@ export function applyHint(
   if (hint.fill) {
     const applied = setCell(state, hint.fill.index, hint.fill.digit, source);
     return {
-      state: { ...applied.state, hint },
+      state: { ...applied.state, hint: applied.result.ok ? null : hint },
       result: {
         ...applied.result,
         hint,
@@ -519,7 +573,7 @@ export function applyHint(
   }
   if (hint.eliminate) {
     const next = commit(state, (draft) => {
-      draft.hint = hint;
+      draft.hint = null;
       for (const step of hint.eliminate ?? []) {
         for (const index of step.indices) {
           if (draft.givens[index] || (source === "agent" && draft.locked[index])) continue;
